@@ -36,4 +36,11 @@ test("checkbox click flow", () => {
 
   // click event
   fireEvent.click(checkbox);
+
+  // check the button state
+  expect(btn).not.toBeEnabled();
+
+  // click event
+  fireEvent.click(checkbox);
+  expect(btn).toBeEnabled();
 });
