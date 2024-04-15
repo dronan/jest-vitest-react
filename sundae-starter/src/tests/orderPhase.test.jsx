@@ -117,3 +117,44 @@ test("Toppings header is not on summary page if no toppings ordered", async () =
   const toppingsHeading = screen.queryByRole("heading", { name: /toppings/i });
   expect(toppingsHeading).not.toBeInTheDocument();
 });
+
+test("Toppings header is not on summary page if no scoops ordered, then removed", async () => {
+  const user = userEvent.setup();
+
+  // render app
+  render(<App />);
+
+  // add ice cream scoops
+  const vanillaInput = await screen.findByRole("spinbutton", {
+    name: "Vanilla",
+  });
+  await user.clear(vanillaInput);
+  await user.type(vanillaInput, "1");
+
+  // add a topping and confirm
+  const cherriesTopping = await screen.findByRole("checkbox", {
+    name: "Cherries",
+  });
+  await user.click(cherriesTopping);
+  expect(cherriesTopping).toBeChecked();
+
+  const toppingsTotal = screen.getByText("Toppings total: $", { exact: false });
+  expect(toppingsTotal).toHaveTextContent("1.50");
+
+  // remove the topping
+  await user.click(cherriesTopping);
+  expect(cherriesTopping).not.toBeChecked();
+  expect(toppingsTotal).toHaveTextContent("0.00");
+
+  // find and click order summary button
+  const orderSummaryButton = screen.getByRole("button", {
+    name: /order sundae/i,
+  });
+  await user.click(orderSummaryButton);
+
+  const scoopsHeading = screen.getByRole("heading", { name: "Scoops: $2.00" });
+  expect(scoopsHeading).toBeInTheDocument();
+
+  const toppingsHeading = screen.queryByRole("heading", { name: /toppings/i });
+  expect(toppingsHeading).not.toBeInTheDocument();
+});
